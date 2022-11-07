@@ -1,8 +1,10 @@
+
+//declare dependancies
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 require('console.table');
 
-
+//creates the database connection
 let dbz_db = mysql.createConnection({
     host: 'localhost',
     port: 3306,
@@ -11,6 +13,7 @@ let dbz_db = mysql.createConnection({
     database: 'dbz_db'
 });
 
+//surmizes the list of prompt messages
 const promptMessages = {
     viewAllEmployees: "View All Employees",
     viewByDepartment: "View All Employees By Department",
@@ -25,12 +28,13 @@ const promptMessages = {
 };
 
 
-
+//if the DB doesnt connect an throw error will be logged
 dbz_db.connect(err => {
     if (err) throw err;
     prompt();
 });
 
+// creates the prompt function to prompt menu options
 function prompt() {
     inquirer
         .prompt({
@@ -50,6 +54,8 @@ function prompt() {
 
             ]
         })
+
+        //Lists all the switch cases for promptMessages
         .then(answer => {
             console.log('answer', answer);
             switch (answer.select) {
@@ -92,6 +98,7 @@ function prompt() {
             }
         });
 }
+//Displays the data when the viewAllEmployees option is selected.
 
 function viewAllEmployees() {
     const query = `SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager
@@ -110,6 +117,8 @@ function viewAllEmployees() {
     });
 }
 
+//Displays the data when the viewByDepartment option is selected.
+
 function viewByDepartment() {
     const query = `SELECT department.name AS department, role.title, employee.id, employee.first_name, employee.last_name
     FROM employee
@@ -126,6 +135,8 @@ function viewByDepartment() {
     });
 }
 
+
+//Displays the data when the viewByManager option is selected.
 
 function viewByManager() {
     const query = `SELECT CONCAT(manager.first_name, ' ', manager.last_name) AS manager, department.name AS department, employee.id, employee.first_name, employee.last_name, role.title
@@ -144,6 +155,8 @@ function viewByManager() {
     });
 }
 
+//Displays the data when the viewAllRoles option is selected.
+
 function viewAllRoles() {
     const query = `SELECT role.title, department.name AS department, role.salary
     FROM role
@@ -160,6 +173,8 @@ function viewAllRoles() {
 
 }
 
+
+//Displays the data when the viewAllDepartments option is selected.
 function viewAllDepartments() {
     const query = `SELECT department.name AS department
     FROM department`;
@@ -174,6 +189,8 @@ function viewAllDepartments() {
 
 }
 
+
+//Displays the data when the addEmployee option is selected.
 async function addEmployee() {
     const addname = await inquirer.prompt(askName());
     dbz_db.query('SELECT role.id, role.title FROM role ORDER BY role.id;', async (err, res) => {
@@ -241,6 +258,7 @@ async function addEmployee() {
 
 }
 
+//Displays the data when the addRole option is selected.
 async function addRole() {
     const addname = await inquirer.prompt(askRole());
     dbz_db.query('SELECT department.id, department.name FROM department', async (err, res) => {
@@ -278,6 +296,7 @@ async function addRole() {
     });
 };
 
+//Displays the data when the addDepartment option is selected.
 async function addDepartment() {
     const addname = await inquirer.prompt(askDepartment());
 
@@ -296,48 +315,7 @@ async function addDepartment() {
     );
 }
 
-
-
-function askId() {
-    return ([
-        {
-            name: "name",
-            type: "input",
-            message: "What is the employee's ID?:  "
-        }
-    ]);
-}
-
-
-async function updateRole() {
-    const employeeId = await inquirer.prompt(askId());
-
-    dbz_db.query('SELECT role.id, role.title FROM role ORDER BY role.id;', async (err, res) => {
-        if (err) throw err;
-        const { role } = await inquirer.prompt([
-            {
-                name: 'role',
-                type: 'list',
-                choices: () => res.map(res => res.title),
-                message: 'What is the employees role?: '
-            }
-        ]);
-        let roleId;
-        for (const row of res) {
-            if (row.title === role) {
-                roleId = row.id;
-                continue;
-            }
-        };
-        dbz_db.query(`UPDATE employee 
-        SET role_id = ${roleId}
-        WHERE employee.id = ${employeeId.name}`, async (err, res) => {
-            if (err) throw err;
-            console.log('Role has been updated..')
-            prompt();
-        });
-    });
-};
+//Displays the data when the askName option is selected.
 
 function askName() {
     return ([
@@ -354,6 +332,8 @@ function askName() {
     ]);
 }
 
+//Displays the data when the askDepartment option is selected.
+
 function askDepartment() {
     return ([
         {
@@ -365,6 +345,7 @@ function askDepartment() {
     ]);
 }
 
+//Displays the data when the askRole option is selected.
 function askRole() {
     return ([
         {
